@@ -48,8 +48,8 @@ public class AuwHelper {
             @Override
             public void onResponse(String response) {
                 Log.d("ajax", "Response: " + response.toString());
-                hideDialog();
                 callback.onSuccess(response);
+                hideDialog();
             }
         }, new Response.ErrorListener() {
 

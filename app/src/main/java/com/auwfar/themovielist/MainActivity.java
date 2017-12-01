@@ -186,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         };
 
         //Run
-        AuwHelper.request(getApplicationContext(), callback, GET_MOVIES.toString(), AuwHelper.GET, param, false);
+        AuwHelper.request(this, callback, GET_MOVIES.toString(), AuwHelper.GET, param, false);
     }
 
     private void setDataCarousel() {
@@ -229,7 +229,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         };
 
         //Run
-        AuwHelper.request(getApplicationContext(), callback, AppConfig.GET_MOVIES_CAROUSEL, AuwHelper.GET, param, false);
+        AuwHelper.request(this, callback, AppConfig.GET_MOVIES_CAROUSEL, AuwHelper.GET, param, false);
     }
 
     @Override

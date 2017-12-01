@@ -176,7 +176,7 @@ public class MovieDetailActivity extends AppCompatActivity {
         };
 
         //Run
-        AuwHelper.request(getApplicationContext(), callback, GET_ACTOR.toString(), AuwHelper.GET, param, false);
+        AuwHelper.request(this, callback, GET_ACTOR.toString(), AuwHelper.GET, param, false);
     }
 
     private void setVideosToRecycler(String movieId) {
@@ -221,7 +221,7 @@ public class MovieDetailActivity extends AppCompatActivity {
         };
 
         //Run
-        AuwHelper.request(getApplicationContext(), callback, GET_ACTOR.toString(), AuwHelper.GET, param, false);
+        AuwHelper.request(this, callback, GET_ACTOR.toString(), AuwHelper.GET, param, false);
     }
 
     @Override
