@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -19,6 +20,8 @@ import android.widget.Toast;
 
 import com.auwfar.themovielist.Actor.Actor;
 import com.auwfar.themovielist.Actor.ActorAdapter;
+import com.auwfar.themovielist.Reviews.Reviews;
+import com.auwfar.themovielist.Reviews.ReviewsAdapter;
 import com.auwfar.themovielist.Videos.Videos;
 import com.auwfar.themovielist.Videos.VideosAdapter;
 import com.auwfar.themovielist.handler.AppConfig;
@@ -49,8 +52,11 @@ public class MovieDetailActivity extends AppCompatActivity {
     @BindView(R.id.movie_backdrop) ImageView movieBackdrop;
     @BindView(R.id.movie_date) TextView movieDate;
     @BindView(R.id.movie_overview) TextView movieOverview;
-    @BindView(R.id.actor_list)RecyclerView actorList;
-    @BindView(R.id.videos_list)RecyclerView videosList;
+    @BindView(R.id.actor_list) RecyclerView actorList;
+    @BindView(R.id.videos_list) RecyclerView videosList;
+    @BindView(R.id.reviews_list) RecyclerView reviewsList;
+
+    @BindView(R.id.empty_review) CardView emptyReviews;
 
     @BindView(R.id.btn_favorite) LinearLayout btnFavorite;
     @BindView(R.id.favorite) ImageView favorite;
@@ -63,6 +69,8 @@ public class MovieDetailActivity extends AppCompatActivity {
     List<Actor> actorModel = new ArrayList<Actor>();
     private VideosAdapter videosAdapter;
     List<Videos> videosModel = new ArrayList<Videos>();
+    private ReviewsAdapter reviewsAdapter;
+    List<Reviews> reviewsModel = new ArrayList<Reviews>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,16 +80,13 @@ public class MovieDetailActivity extends AppCompatActivity {
 
         ButterKnife.bind(this);
 
-        RequestOptions requestOptions = new RequestOptions();
-        requestOptions.diskCacheStrategy(DiskCacheStrategy.ALL);
-
         String movieJson = getIntent().getStringExtra("movie");
         final Movie movie = new GsonBuilder().create().fromJson(movieJson, Movie.class);
         setTitle(movie.getMovieTitle());
 
         Glide.with(getApplicationContext())
                 .load(movie.getMovieImage())
-                .apply(requestOptions)
+                .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
                 .into(movieImage);
 
         Glide.with(getApplicationContext())
@@ -133,6 +138,8 @@ public class MovieDetailActivity extends AppCompatActivity {
         setActorToRecycler(movie.getMovieId());
         videosList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         setVideosToRecycler(movie.getMovieId());
+        reviewsList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        setReviewsToRecycler(movie.getMovieId());
     }
 
     private void setActorToRecycler(String movieId) {
@@ -224,6 +231,55 @@ public class MovieDetailActivity extends AppCompatActivity {
         AuwHelper.request(this, callback, GET_ACTOR.toString(), AuwHelper.GET, param, false);
     }
 
+    private void setReviewsToRecycler(String movieId) {
+        Uri GET_ACTOR = Uri.parse(AppConfig.BASE_MOVIE).buildUpon()
+                .appendPath(String.valueOf(movieId))
+                .appendPath(AppConfig.GET_REVIEWS)
+                .appendQueryParameter("api_key", AppConfig.API_KEY)
+                .build();
+        //Declare For Request
+        //Parameter
+        HashMap<String,String> param = new HashMap<String,String>();
+
+        //Process JSON
+        AuwHelper.VolleyCallback callback = new AuwHelper.VolleyCallback() {
+            @Override
+            public void onSuccess(String result) {
+                try {
+                    if (result != null) {
+                        JSONObject jObj = new JSONObject(result);
+                        JSONArray data = jObj.getJSONArray("results");
+
+                        if(data.length() > 0) {
+                            showReviews();
+                        } else {
+                            hideReviews();
+                        }
+
+                        for (int i = 0; i < data.length(); i++) {
+                            JSONObject index = data.getJSONObject(i);
+
+                            Reviews model = new Reviews();
+                            model.setReviewsAuthor(index.getString("author"));
+                            model.setReviewsContent(index.getString("content"));
+
+                            reviewsModel.add(model);
+                        }
+
+                        reviewsAdapter = new ReviewsAdapter(reviewsModel);
+                        reviewsList.setAdapter(reviewsAdapter);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getApplicationContext(), "Error JSON Parse", Toast.LENGTH_LONG).show();
+                }
+            }
+        };
+
+        //Run
+        AuwHelper.request(this, callback, GET_ACTOR.toString(), AuwHelper.GET, param, false);
+    }
+
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
@@ -242,5 +298,15 @@ public class MovieDetailActivity extends AppCompatActivity {
         favorite.setVisibility(View.GONE);
         unfavorite.setVisibility(View.VISIBLE);
         labelFavorite.setTextColor(Color.parseColor("#FFFFFF"));
+    }
+
+    private void hideReviews() {
+        emptyReviews.setVisibility(View.VISIBLE);
+        reviewsList.setVisibility(View.GONE);
+    }
+
+    private void showReviews() {
+        reviewsList.setVisibility(View.VISIBLE);
+        emptyReviews.setVisibility(View.GONE);
     }
 }

@@ -18,6 +18,7 @@ public class AppConfig {
 
     public static String BASE_MOVIE             = BASE_URL + "movie";
     public static String GET_MOVIES             = BASE_MOVIE +"?api_key=" + API_KEY;
+    public static String GET_REVIEWS            = "reviews";
     public static String GET_ACTOR              = "credits";
     public static String GET_VIDEOS             = "videos";
 }
